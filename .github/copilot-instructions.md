@@ -566,3 +566,72 @@ Do not merely explain what should be done.
 The permanent instructions must be version-controlled project files, ready to be committed to Git.
 
 From this point forward, use these engineering principles for every coding task in this repository.
+
+---
+
+# 14. PROJECT-SPECIFIC RULES FOR GOCOINS
+
+This repository is a Vite + React + TypeScript storefront demo named GOCOINS. It is a front-end-only experience for browsing a game top-up catalog, choosing bundles, and presenting a demonstration purchase flow. There is no real payment gateway, database, or server-side authorization layer in this project.
+
+## Architecture and stack
+
+- Frontend framework: React 18 + TypeScript with Vite.
+- Routing: React Router for the SPA layout and placeholder pages.
+- Styling: Tailwind CSS with a theme provider and CSS variables for light/dark modes.
+- UI helpers: lucide-react icons, lazy-loaded route components, and reusable shared layout elements.
+- Data model: demo catalog and order metadata live under `src/data/`, browser-side state storage lives under `src/api/` or adjacent local state helpers, and shared UI lives under `src/components/`.
+- Route structure is centralized in `src/App.tsx`; keep page-level feature logic local to `src/pages/` and shared UI in `src/components/`.
+
+## Project conventions
+
+- Favor TypeScript safety and strict mode. Preserve the existing `@/*` path alias and prefer direct imports from the project’s established structure over introducing new abstractions.
+- Keep page components and route branches readable and small; prefer composition over new framework layers.
+- When adding or editing UI, preserve the existing color scheme, responsive layout behavior, and browser-first design.
+- Use named exports for components when that is the established pattern and avoid broad refactors during focused bug fixes.
+- Do not add unrelated backend architecture, auth providers, or payment systems to a demo frontend unless the request explicitly requires it.
+
+## Performance and reliability
+
+- Prefer lazy-loading for route-level screens and keep the app responsive even when placeholder pages are rendered.
+- Avoid excessive localStorage writes. Only persist data that truly needs to survive a refresh and keep it minimal and safe.
+- Avoid unnecessary re-renders and keep handlers stable unless there is a clear need to change them.
+- Do not introduce heavy dependencies or large libraries to solve small UI problems.
+- Preserve the existing `ThemeProvider` pattern and avoid duplicate state ownership for theme settings.
+
+## Security and data handling
+
+- Treat all browser-side data as untrusted and keep demo data isolated from any real user or payment data.
+- Never hardcode private keys, API tokens, credentials, or production secrets into the frontend or repository.
+- Keep demo-only purchase flows clearly non-production. If a feature introduces a real transaction path, it must be explicitly separated from the demo experience and must not ship by default.
+- Do not add unsafe HTML injection or user-controlled rendering patterns; prefer safe, controlled JSX output.
+
+## Error handling
+
+- Use graceful fallback UI for lazy-loaded pages and missing route states.
+- Preserve user-friendly placeholder text for future backend features and do not pretend they are production-ready.
+- Handle missing values or invalid localStorage reads defensively without crashing the app.
+- Preserve the original error context in logs or visible messaging when a failure is user-visible.
+
+## Testing and validation
+
+Before considering a change complete, validate with the project’s existing checks:
+
+```sh
+npm run lint
+npm run typecheck
+npm run build
+```
+
+- Add tests only when a change introduces or fixes meaningful behavior that cannot be validated through existing focused checks.
+- Prefer targeted validation over broad suite expansion.
+- Never delete or weaken existing checks to get a green build.
+
+## Refactoring and workflow
+
+- Keep changes localized and aligned with the existing route/page/component structure.
+- Reuse existing utilities and patterns instead of creating parallel implementations.
+- Fix the root cause, not the symptom, and avoid unrelated cleanup while working on a focused task.
+- Audit for side effects, especially around theme state, localStorage, route behavior, and lazy-loaded modules.
+- When the project is ambiguous, follow the repo’s existing conventions and the current design intent rather than introducing a new architectural pattern.
+
+This repository’s engineering instructions apply to every task unless a user request explicitly overrides them with a narrower technical requirement. In that case, the repo instructions remain the baseline and the narrower requirement must still be consistent with safety, validation, and project conventions.
