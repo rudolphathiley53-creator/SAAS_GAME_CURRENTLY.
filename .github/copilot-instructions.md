@@ -635,3 +635,20 @@ npm run build
 - When the project is ambiguous, follow the repo’s existing conventions and the current design intent rather than introducing a new architectural pattern.
 
 This repository’s engineering instructions apply to every task unless a user request explicitly overrides them with a narrower technical requirement. In that case, the repo instructions remain the baseline and the narrower requirement must still be consistent with safety, validation, and project conventions.
+
+---
+
+## MANDATORY DESIGN REFERENCE BEFORE CODE CHANGES
+
+Before starting any implementation work, inspect the file `.github/STRUCTURE_GLOBALE_PLATEFORME_GAMING_AI.md` and treat it as the source-of-truth architectural reference for the desired business and UI structure of the platform.
+
+Rules:
+
+- Read this document before coding or planning a feature.
+- Align implementation choices with the product architecture described there: gaming store, AI credits, wallet, account flows, admin/support roles, and modular service boundaries.
+- Keep the code consistent with the target platform’s structure rather than improvising a disconnected UI pattern.
+- When the repository is in a demo or partial state, still implement toward the final target structure and avoid introducing patterns that conflict with the architecture described in the reference document.
+- If a requirement conflicts with the reference structure, treat the reference as the higher-priority specification unless the user explicitly requests a narrower short-term prototype and explains the deviation.
+- Preserve the documented principles: server-side monetary logic, idempotence, XOF pricing as integers, role-based access control, and separation of concerns between commerce, wallet, IA, and administration modules.
+
+This requirement is mandatory for every future task in this repository and must be respected on every coding turn.
