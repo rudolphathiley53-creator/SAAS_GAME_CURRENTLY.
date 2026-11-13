@@ -1,5 +1,5 @@
 ---
-applyTo: "**/*.{ts,tsx,js,jsx,md}"
+applyTo: '**/*.{ts,tsx,js,jsx,md}'
 ---
 
 # Gaming platform structure guardrail

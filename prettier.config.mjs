@@ -1,0 +1,8 @@
+const config = {
+  semi: true,
+  singleQuote: true,
+  trailingComma: 'all',
+  plugins: ['prettier-plugin-tailwindcss'],
+};
+
+export default config;

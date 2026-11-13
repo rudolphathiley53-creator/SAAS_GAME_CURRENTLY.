@@ -571,84 +571,93 @@ From this point forward, use these engineering principles for every coding task 
 
 # 14. PROJECT-SPECIFIC RULES FOR GOCOINS
 
-This repository is a Vite + React + TypeScript storefront demo named GOCOINS. It is a front-end-only experience for browsing a game top-up catalog, choosing bundles, and presenting a demonstration purchase flow. There is no real payment gateway, database, or server-side authorization layer in this project.
+This repository is the GOCOINS Gaming Store & AI Credits frontend foundation.
+The former Vite demonstration catalog and mock purchase flow have been
+removed. The current stack is Next.js App Router, React, strict TypeScript,
+Tailwind CSS, Supabase Auth/PostgreSQL scaffolding, and reusable React
+components.
 
 ## Architecture and stack
 
-- Frontend framework: React 18 + TypeScript with Vite.
-- Routing: React Router for the SPA layout and placeholder pages.
-- Styling: Tailwind CSS with a theme provider and CSS variables for light/dark modes.
-- UI helpers: lucide-react icons, lazy-loaded route components, and reusable shared layout elements.
-- Data model: demo catalog and order metadata live under `src/data/`, browser-side state storage lives under `src/api/` or adjacent local state helpers, and shared UI lives under `src/components/`.
-- Route structure is centralized in `src/App.tsx`; keep page-level feature logic local to `src/pages/` and shared UI in `src/components/`.
+- Route pages and API handlers live in `src/app/` using Next.js App Router.
+- Shared UI lives in `src/components/`; domain code is organized under
+  `src/modules/`; shared integrations and validation live in `src/lib/`.
+- Supabase browser, server-cookie, and public read-only clients are separate.
+  Database types are in `src/types/database.types.ts`; versioned SQL lives in
+  `supabase/migrations/`.
+- Preserve the existing light/dark theme provider, CSS-variable palette, and
+  responsive design.
+- `.github/STRUCTURE_GLOBALE_PLATEFORME_GAMING_AI.md` is the authoritative
+  product and architecture reference. Read relevant sections before every
+  feature change and follow `.github/instructions/gaming-platform-structure.instructions.md`.
 
 ## Project conventions
 
-- Favor TypeScript safety and strict mode. Preserve the existing `@/*` path alias and prefer direct imports from the project’s established structure over introducing new abstractions.
-- Keep page components and route branches readable and small; prefer composition over new framework layers.
-- When adding or editing UI, preserve the existing color scheme, responsive layout behavior, and browser-first design.
-- Use named exports for components when that is the established pattern and avoid broad refactors during focused bug fixes.
-- Do not add unrelated backend architecture, auth providers, or payment systems to a demo frontend unless the request explicitly requires it.
-
-## Performance and reliability
-
-- Prefer lazy-loading for route-level screens and keep the app responsive even when placeholder pages are rendered.
-- Avoid excessive localStorage writes. Only persist data that truly needs to survive a refresh and keep it minimal and safe.
-- Avoid unnecessary re-renders and keep handlers stable unless there is a clear need to change them.
-- Do not introduce heavy dependencies or large libraries to solve small UI problems.
-- Preserve the existing `ThemeProvider` pattern and avoid duplicate state ownership for theme settings.
+- Keep TypeScript strict and preserve the `@/*` path alias.
+- Prefer server components and server-side data reads by default. Add client
+  components only for browser interaction.
+- Keep components and route modules focused; follow existing named-export and
+  styling conventions.
+- Do not add demo products, sample balances, orders, payments, deliveries,
+  provider states, API keys, or AI usage.
+- Use explicit loading, empty, unavailable, and error states. Do not describe a
+  placeholder as a functioning production integration.
 
 ## Security and data handling
 
-- Treat all browser-side data as untrusted and keep demo data isolated from any real user or payment data.
-- Never hardcode private keys, API tokens, credentials, or production secrets into the frontend or repository.
-- Keep demo-only purchase flows clearly non-production. If a feature introduces a real transaction path, it must be explicitly separated from the demo experience and must not ship by default.
-- Do not add unsafe HTML injection or user-controlled rendering patterns; prefer safe, controlled JSX output.
+- Treat browser state and request input as untrusted. Validate at the server
+  boundary and re-read mutable catalog data server-side.
+- Never trust a client-supplied role, price, order state, balance, delivery
+  status, or payment result.
+- Enforce session and role checks on the server and use RLS plus least-privilege
+  grants for database access.
+- Never expose a Supabase service-role key or provider secret in source code,
+  logs, API responses, or any `NEXT_PUBLIC_*` variable.
+- OTP UI/actions must remain gated on the live Supabase Auth phone setting.
+  A provider name alone does not prove that SMS sign-in is configured.
+- No payment, supplier purchase, wallet, delivery, or AI Gateway workflow may
+  be simulated as successful. XOF monetary amounts are integers and all
+  financial operations belong on the server.
 
-## Error handling
+## Performance and reliability
 
-- Use graceful fallback UI for lazy-loaded pages and missing route states.
-- Preserve user-friendly placeholder text for future backend features and do not pretend they are production-ready.
-- Handle missing values or invalid localStorage reads defensively without crashing the app.
-- Preserve the original error context in logs or visible messaging when a failure is user-visible.
+- Bound catalog queries and other untrusted or potentially large operations.
+- Avoid duplicate remote calls and repeated catalog-wide reads for a single
+  product detail.
+- Persist only minimal non-sensitive browser state. Cart data may contain only
+  catalog identifiers and bounded quantities; never persist prices as truth.
+- Preserve request cancellation and explicit error reporting for async UI.
+- Avoid new dependencies unless existing project tools cannot meet the need.
 
-## Testing and validation
+## Error handling and testing
 
-Before considering a change complete, validate with the project’s existing checks:
+- Preserve useful error context in private server logs without logging secrets
+  or unnecessary personal data.
+- Return explicit unavailable/error states rather than fabricated success.
+- Add focused tests for meaningful behavior and security boundaries.
+- Run the appropriate checks before reporting completion:
 
 ```sh
 npm run lint
 npm run typecheck
+npm test
+npm run format:check
 npm run build
 ```
 
-- Add tests only when a change introduces or fixes meaningful behavior that cannot be validated through existing focused checks.
-- Prefer targeted validation over broad suite expansion.
-- Never delete or weaken existing checks to get a green build.
+`npm run format:check` validates formatting. Document any check that could not
+be run and never claim an unexecuted check passed.
 
 ## Refactoring and workflow
 
-- Keep changes localized and aligned with the existing route/page/component structure.
-- Reuse existing utilities and patterns instead of creating parallel implementations.
-- Fix the root cause, not the symptom, and avoid unrelated cleanup while working on a focused task.
-- Audit for side effects, especially around theme state, localStorage, route behavior, and lazy-loaded modules.
-- When the project is ambiguous, follow the repo’s existing conventions and the current design intent rather than introducing a new architectural pattern.
+- Inspect the relevant route, module, migration, and tests before editing.
+- Keep changes localized, reuse existing patterns, and update directly related
+  docs.
+- Do not modify an applied migration. Add a new migration for schema changes.
+- Keep local and remote schema changes separate. Never apply a remote migration
+  without explicit user approval and authenticated tooling.
+- Before completion, review the final diff and confirm that the demo, secrets,
+  and unintended generated files have not been reintroduced.
 
-This repository’s engineering instructions apply to every task unless a user request explicitly overrides them with a narrower technical requirement. In that case, the repo instructions remain the baseline and the narrower requirement must still be consistent with safety, validation, and project conventions.
-
----
-
-## MANDATORY DESIGN REFERENCE BEFORE CODE CHANGES
-
-Before starting any implementation work, inspect the file `.github/STRUCTURE_GLOBALE_PLATEFORME_GAMING_AI.md` and treat it as the source-of-truth architectural reference for the desired business and UI structure of the platform.
-
-Rules:
-
-- Read this document before coding or planning a feature.
-- Align implementation choices with the product architecture described there: gaming store, AI credits, wallet, account flows, admin/support roles, and modular service boundaries.
-- Keep the code consistent with the target platform’s structure rather than improvising a disconnected UI pattern.
-- When the repository is in a demo or partial state, still implement toward the final target structure and avoid introducing patterns that conflict with the architecture described in the reference document.
-- If a requirement conflicts with the reference structure, treat the reference as the higher-priority specification unless the user explicitly requests a narrower short-term prototype and explains the deviation.
-- Preserve the documented principles: server-side monetary logic, idempotence, XOF pricing as integers, role-based access control, and separation of concerns between commerce, wallet, IA, and administration modules.
-
-This requirement is mandatory for every future task in this repository and must be respected on every coding turn.
+These rules complement the engineering standards above and apply to all
+repository changes.

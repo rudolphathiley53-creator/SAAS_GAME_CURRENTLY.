@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+const config = {
+  content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
     extend: {
       colors: {
@@ -24,6 +24,7 @@ export default {
           600: 'rgb(var(--color-coral-600) / <alpha-value>)',
         },
         ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        surface: 'rgb(var(--color-surface) / <alpha-value>)',
       },
       fontFamily: {
         display: ['Manrope', 'system-ui', '-apple-system', 'sans-serif'],
@@ -71,3 +72,5 @@ export default {
   },
   plugins: [],
 };
+
+export default config;

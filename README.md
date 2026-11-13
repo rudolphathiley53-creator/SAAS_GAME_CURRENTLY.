@@ -1,120 +1,105 @@
-# GOCOINS
+# GOCOINS — Gaming Store & AI Credits
 
-GOCOINS est une boutique frontend de démonstration pour découvrir une expérience
-de recharge de jeux vidéo : consultation des jeux et des packs, choix d’un
-montant et saisie des informations nécessaires à une commande.
+GOCOINS is being prepared as a French-first, mobile-responsive platform for a
+gaming catalog and future AI credits. The frontend uses Next.js App Router,
+TypeScript, Tailwind CSS, and Supabase Auth/PostgreSQL scaffolding.
 
-L’interface est conçue pour être responsive et propose un thème clair ou sombre,
-un bandeau d’accueil animé par des vidéos et une ambiance sonore facultative.
+The former Vite demo catalog and mock purchase flow have been removed. No
+fictional products, orders, balances, payments, delivery events, AI usage, or
+provider integrations are included.
 
-> **Version frontend uniquement :** aucun serveur ni service de paiement n’est
-> connecté. Les prix et commandes sont des données de démonstration ; aucune
-> recharge, vérification de joueur ou transaction réelle n’est effectuée.
+## Current scope
 
-## Fonctionnalités
+- Public catalog pages read only active categories, published products, and
+  active variants from Supabase.
+- Product and category detail pages, catalog search/sort, and a browser cart
+  are available. The cart stores variant IDs and quantities only; the displayed
+  subtotal is informational.
+- Phone OTP forms are enabled only when the configured Supabase project reports
+  phone authentication enabled. A prior read-only check found phone auth
+  disabled; re-check the live setting before relying on OTP.
+- Account and admin routes verify the current user and profile server-side.
+  Admin access is denied unless the database profile has an active admin role.
+- Orders, payments, delivery, wallet, AI gateway, provider actions, and admin
+  mutations are intentionally not operational. Checkout does not create an
+  order or initiate payment.
+- `supabase/migrations/20261111130000_identity_and_public_catalog.sql` is a
+  local, unapplied foundation for profiles and the public catalog. It has not
+  been applied to the remote project.
 
-- Accueil avec catalogue, packs populaires et aperçu du parcours de recharge.
-- Jeux et offres de démonstration pour Free Fire et PUBG Mobile.
-- Modale de commande de démonstration avec choix des packs et montant
-  personnalisé lorsque celui-ci est disponible.
-- Préférences de thème mémorisées dans le navigateur.
-- Bandeau vidéo avec rotation des clips du dossier `VIDEO/`.
-- Mélodie générée par le navigateur, activable et désactivable par l’utilisateur.
-- Mise en page adaptée aux écrans mobiles et aux ordinateurs.
+## Requirements
 
-## Prérequis
-
-- Node.js 20.19+ ou 22.12+.
+- Node.js 24 (see `.nvmrc`; Next.js requires Node.js 20.9 or newer).
 - npm.
+- Supabase environment variables for live catalog and auth connections.
 
-## Installation et démarrage
-
-Depuis la racine du projet :
+## Local setup
 
 ```sh
-npm install
+npm ci
+Copy-Item .env.example .env.local
+```
+
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in the
+ignored `.env.local` file. Use only a publishable/anon key in these public
+variables. Never put a service-role key or provider secret in a `NEXT_PUBLIC_*`
+variable. The app can also start without Supabase configured; data-dependent
+features will show explicit unavailable states.
+
+```sh
 npm run dev
 ```
 
-Vite affiche dans le terminal l’adresse locale à ouvrir dans le navigateur
-(généralement <http://localhost:5173>).
+Open <http://localhost:3000>.
 
-Aucun fichier `.env` ou `.env.local` n’est requis pour lancer cette version.
-
-## Commandes disponibles
-
-| Commande | Description |
-| --- | --- |
-| `npm run dev` | Démarre le serveur de développement Vite. |
-| `npm run build` | Génère la version de production dans `dist/`. |
-| `npm run preview` | Sert localement la version compilée. |
-| `npm run lint` | Vérifie le code avec ESLint. |
-| `npm run typecheck` | Vérifie les types TypeScript. |
-
-Avant de publier une modification, lancez les vérifications suivantes :
+## Validation
 
 ```sh
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
-## Pages
+`npm run format:check` checks the repository's Prettier configuration.
 
-| Adresse | Contenu |
-| --- | --- |
-| `/` | Accueil et catalogue de jeux. |
-| `/recharger` | Page indiquant que la gestion des recharges attend le backend. |
-| `/commande/:orderId` | Écran de caisse provisoire. |
-| `/commandes` | Écran provisoire de l’historique des commandes. |
-| `/suivi/:orderId` | Écran provisoire du suivi. |
-| `/compte` | Écran provisoire des récompenses. |
-| `/aide` | Écran provisoire d’aide. |
-| `/admin/*` | Indique que l’administration n’est pas incluse. |
+## Main routes
 
-Les écrans marqués comme provisoires ou en attente du backend ne sont pas des
-fonctionnalités opérationnelles. La modale de commande accessible depuis le
-catalogue sert uniquement à présenter le parcours de démonstration.
+| Route                                          | Purpose                                             |
+| ---------------------------------------------- | --------------------------------------------------- |
+| `/`                                            | Platform overview and published catalog             |
+| `/gaming`, `/categories`, `/categories/[slug]` | Public gaming catalog                               |
+| `/products/[slug]`                             | Published product and active variants               |
+| `/cart`, `/checkout`                           | Browser cart and non-operational checkout state     |
+| `/login`, `/signup`, `/verify`                 | Supabase phone OTP, gated by live provider settings |
+| `/account/**`                                  | Session- and profile-checked customer area          |
+| `/admin/**`                                    | Server-checked admin shell; actions remain disabled |
+| `/ai-credits`                                  | AI Credits capability status                        |
+| `/faq`, `/contact`, `/legal/**`                | Public information and clearly marked legal drafts  |
+| `/api/v1/catalog/**`                           | Read-only catalog endpoints                         |
 
-## Organisation du code
+## Architecture
 
 ```text
 src/
-├── api/          # Accès aux données locales et stockage navigateur
-├── components/   # Navigation, thème, modales et composants partagés
-├── data/         # Catalogue et types TypeScript
-├── hooks/        # Hooks React
-├── pages/        # Pages de la boutique
-├── App.tsx       # Routes et layout général
-└── index.css     # Styles globaux, palette et thèmes
-VIDEO/            # Clips utilisés par le bandeau d’accueil
+├── app/                 # App Router pages and API routes
+├── components/          # Shared UI, auth, cart and catalog components
+├── lib/supabase/        # Browser, server and public Supabase clients
+├── modules/             # Catalog and identity domain services
+├── types/               # Supabase database types
+└── proxy.ts             # Session refresh for private account/admin routes
+supabase/migrations/     # Versioned local SQL migrations
+docs/                    # Progress, decisions and implementation plan
 ```
 
-Les données de démonstration sont définies dans `src/data/`. Certaines
-informations de commande peuvent être conservées dans le `localStorage` du
-navigateur ; elles ne sont pas synchronisées entre appareils.
+The target architecture and business/security requirements are defined in
+`.github/STRUCTURE_GLOBALE_PLATEFORME_GAMING_AI.md`. Do not implement financial
+or provider workflows in the browser; server-side services, idempotency, RLS,
+and validated integrations are prerequisites.
 
-## Médias et connexion
+## Migration status
 
-Le bandeau utilise les clips suivants :
-
-- `VIDEO/VID-20261104-WA0050.mp4`
-- `VIDEO/VID-20261104-WA0052.mp4`
-- `VIDEO/VID-20261104-WA0054(1).mp4`
-
-Les autres vidéos ne sont pas nécessaires au site et sont exclues de Git par
-`.gitignore`. La police Rajdhani et la police Manrope sont chargées depuis
-Google Fonts ; les visuels de démonstration du catalogue utilisent
-placehold.co. Une connexion Internet est donc nécessaire pour récupérer ces
-ressources externes.
-
-## Publication
-
-Le projet peut être compilé avec `npm run build`, puis le contenu de `dist/`
-peut être déployé sur un hébergeur de sites statiques. Configurez l’hébergeur
-pour rediriger les routes inconnues vers `index.html`, afin que les routes
-React Router fonctionnent après actualisation d’une page.
-
-Pour mettre en place de vrais paiements, commandes, comptes ou outils
-d’administration, il faudra ajouter et configurer un backend sécurisé. Les clés
-privées et secrets ne doivent jamais être intégrés au frontend.
+The foundation migration is not applied remotely. Review it and test it against
+a local Supabase instance before any remote application. Applying it requires
+authenticated Supabase CLI/database access; a publishable key is insufficient.
+Do not apply remote schema changes without explicit approval.

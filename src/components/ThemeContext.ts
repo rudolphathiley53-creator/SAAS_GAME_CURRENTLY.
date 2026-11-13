@@ -1,8 +1,15 @@
+'use client';
+
 import { createContext, useContext } from 'react';
 
 export type Theme = 'light' | 'dark';
 
-export const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void } | null>(null);
+type ThemeContextValue = {
+  theme: Theme;
+  toggleTheme: () => void;
+};
+
+export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function useTheme() {
   const context = useContext(ThemeContext);
